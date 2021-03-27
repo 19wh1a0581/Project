@@ -1,0 +1,106 @@
+#!/usr/bin/env python3
+
+from collections import defaultdict
+import re
+
+class FileParser:
+    def _init_(self, filepath):
+        self.file = open(filepath, 'r')
+        self.lines = self.file.readlines()
+        self.index = 0
+        self.length = self.lines.size()
+    
+    def getInputSet(self, fireCorner, streetlist):
+        
+        if self.length == self.index:
+            return 0
+            
+        firecorner = self.lines[self.index]
+        self.index += 1
+        
+        loop = True
+        while (loop == True):
+            temp = re.findall(r'\d+', self.lines[self.index])
+            res = list(map(int, temp))
+            
+            for a, b in res:
+                if a == 0 and b == 0:
+                    return 1
+                    
+            streetlist.append(res)
+            
+class CommandLineParser:
+    def _init_(self, inputstring):
+        temp = re.findall(r'\d+', inputstring)
+        self.res = list(temp)
+        print ("Input ::", self.res)
+        self.index = 0
+        self.length = len(self.res)
+        print ("Total Numbers :: ", self.length)
+
+    def getInputSet(self, streetlist):
+
+        firecorner = int(self.res[self.index])
+        print ("Firecorner ", firecorner)
+        self.index += 1
+        
+        loop = True
+        while (loop == True):
+            if self.index == self.length:
+                return 0
+
+            if self.res[self.index] == '0' and self.res[self.index+1] == '0':
+                self.index += 2
+                return firecorner
+                
+            #print ("Index ", self.index)    
+            #print ("Item 1 ", self.res[self.index])
+            #print ("Item 2 ", self.res[self.index+1])
+            streetlist.append((int(self.res[self.index]), int(self.res[self.index+1])))
+            self.index += 2
+                    
+class StreetMap:
+    def _init_(self, streetcorners, streets):
+        self.corners = streetcorners
+        self.streets = streets
+        self.streetmap = defaultdict(list)
+        self.visited = [False]*streetcorners
+        self.routes = []
+        
+        for a,b in streets:
+            #print ("a, b", a, b)
+            self.streetmap[a].append(b)
+            self.streetmap[b].append(a)
+        
+    def findRoutes(self, start, end):
+        #print ("Iteration ", start, end)
+        self.visited[start] = True
+        self.routes.append(start)
+        
+        if start == end:
+            print ("Route :: ", self.routes)
+        else:
+            for i in self.streetmap[start]:
+                if self.visited[i] == False:
+                    self.findRoutes(i, end)
+                    
+        self.routes.pop()
+        self.visited[start]=False
+ 
+cli = CommandLineParser(input()) 
+firecorner = 1
+streetlist = []
+firecorner = cli.getInputSet(streetlist)
+print ("Fire at street corner : ", firecorner)
+print ("Street list : ", streetlist)
+
+map = StreetMap(10, streetlist)
+map.findRoutes(1, firecorner)
+
+streetlist.clear()
+firecorner = cli.getInputSet(streetlist)
+print ("Fire at street corner : ", firecorner)
+print ("Street list : ", streetlist)
+
+map = StreetMap(10, streetlist)
+map.findRoutes(1, firecorner)
